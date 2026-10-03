@@ -2,7 +2,7 @@
 
 Command: `PYTHONDONTWRITEBYTECODE=1 python3 -m interop.checks`
 (also the CI workflow). JSON report: `interop/checks-report.json`.
-Latest green run: **46 tests, 0 failures, 0 errors; 5/5 baseline
+Latest green run: **50 tests, 0 failures, 0 errors; 5/5 baseline
 problems reproduced. OVERALL: pass.**
 
 ## Part 1 — baseline failures (reproduced from actual sources)
@@ -19,13 +19,14 @@ problems reproduced:
 | P4 | OWA always accepts | `orthogonal_witness_verify` returned `True` for a forged receipt with no checks |
 | P5 | swarm never invokes COLE/controller; stale memory | `run_task` emitted to disk but `orchestrator.receipts` stayed at 0; `swarm.py` contains no reference to `cole_monitor`/`tc_controller` |
 
-## Part 2 — integration results (46 tests, 0 failures)
+## Part 2 — integration results (50 tests, 0 failures)
 
 | area | tests | result |
 |---|---|---|
 | storage: index normalization (missing/dict/list/invalid/**null rejected, file untouched**) | 5 | pass |
 | storage: both baseline init orders converge | 2 | pass |
 | storage: restart recovery | 1 | pass |
+| storage: duplicate receipt_id rejected, history preserved | 1 | pass |
 | storage: concurrent writes (8 threads × 25, no loss/dup) | 1 | pass |
 | storage: **chain intact after concurrent writes (verify_chain over index order)** | 1 | pass |
 | storage: handoff (fresh + populated) | 2 | pass |
@@ -35,6 +36,7 @@ problems reproduced:
 | chain: verify_chain valid / broken link / reordered / missing | 4 | pass |
 | conversion: 3 legacy formats + honest status + never-verifies-as-signed | 4 | pass |
 | conversion: **outcome never substring-matched ("unsuccessful"→unknown)** | 1 | pass |
+| conversion: converter registry covers all three sources | 1 | pass |
 | orchestration: executor outcomes (success/exception), memory updated every emit | 3 | pass |
 | orchestration: witness rejection propagates; chain_witness rejects tampering | 2 | pass |
 | orchestration: COLE+controller invoked; controller boundaries; drift→reroute; no reroute when healthy; epsilon metric | 5 | pass |
@@ -42,6 +44,7 @@ problems reproduced:
 | orchestration: restart rebuilds memory; cross-restart chain verifies | 1 | pass |
 | orchestration: **reroute survives restart (fallback used after)** | 1 | pass |
 | orchestration: **concurrent tasks keep a verifiable chain** | 1 | pass |
+| orchestration: concurrent cold baseline imports restore patched globals | 1 | pass |
 | isolation: no import-time filesystem writes; storage writes stay in root | 2 | pass |
 | repro safety: **sentinel files survive the baseline reproduction** | 1 | pass |
 
