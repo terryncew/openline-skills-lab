@@ -1,0 +1,27 @@
+name: interop-checks
+
+on: [push, pull_request]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install cryptography
+      - name: Prepare isolated baseline sandbox
+        # baseline_repro.py executes the unmodified baseline sources, which
+        # hard-code /home/workdir paths. Give the runner user ownership so
+        # the sandbox stays isolated from any real state.
+        run: sudo mkdir -p /home/workdir && sudo chown $USER /home/workdir
+      - name: Run interop checks
+        run: PYTHONDONTWRITEBYTECODE=1 python -m interop.checks --report checks-report.json
+      - name: Upload JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checks-report
+          path: checks-report.json
